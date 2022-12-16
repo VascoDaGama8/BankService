@@ -1,9 +1,11 @@
 package Finteche.Bank.BankService.rest;
 
+import Finteche.Bank.BankService.dto.RegisterDto;
 import Finteche.Bank.BankService.models.Errors;
 import Finteche.Bank.BankService.models.User;
 import Finteche.Bank.BankService.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -12,12 +14,13 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class RegisterController {
 
+    @Autowired
     private UserService userService;
 
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/register")
-    public void register(@RequestBody User user) throws IllegalAccessException {
-        userService.register(user);
+    public void register(@RequestBody RegisterDto registerDto) throws IllegalAccessException {
+        userService.register(registerDto);
     }
 
     @ExceptionHandler(IllegalAccessException.class)

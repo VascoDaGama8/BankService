@@ -1,33 +1,48 @@
 package Finteche.Bank.BankService.security.jwt;
 
-import lombok.Generated;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import Finteche.Bank.BankService.security.JwtUserDetailsService;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+@Slf4j
+public class JwtTokenFilter extends OncePerRequestFilter{
 
-public class JwtTokenFilter extends GenericFilterBean {
     private JwtTokenProvider jwtTokenProvider;
-    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider){
+
+    public JwtTokenFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
+
+    @SneakyThrows
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        String token = jwtTokenProvider.resolveToken((HttpServletRequest) servletRequest);
-        if(token != null && jwtTokenProvider.validateToken(token)){
-            UsernamePasswordAuthenticationToken authentication = jwtTokenProvider.getAuthentication(token);
-            if(authentication != null){
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+    public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain)
+            throws IOException, ServletException {
+        log.info("req {}",req);
+        log.info("res {}",res);
+        String token = jwtTokenProvider.resolveToken(req);
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+            Authentication auth = jwtTokenProvider.getAuthentication(token);
+            log.info("auth {}",auth);
+            if (auth != null) {
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(req, res);
     }
+
 }
