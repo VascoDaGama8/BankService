@@ -1,6 +1,7 @@
 package Finteche.Bank.BankService.service;
 
 import Finteche.Bank.BankService.dto.RegisterDto;
+import Finteche.Bank.BankService.dto.TransferDto;
 import Finteche.Bank.BankService.models.User;
 
 import java.util.List;
@@ -13,4 +14,8 @@ public interface UserService {
     User findByUsername(String username);
 
     User findByAccountNumber(String accountNumber);
+
+    void addMoney(String to, String amount) throws IllegalAccessException;
+
+    void makeTransfer(TransferDto transferBlanace) throws IllegalAccessException;
 }

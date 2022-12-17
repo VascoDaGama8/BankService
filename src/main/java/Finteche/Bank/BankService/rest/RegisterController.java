@@ -1,11 +1,11 @@
 package Finteche.Bank.BankService.rest;
 
+import Finteche.Bank.BankService.dto.ErrorDto;
 import Finteche.Bank.BankService.dto.RegisterDto;
-import Finteche.Bank.BankService.models.Errors;
-import Finteche.Bank.BankService.models.User;
 import Finteche.Bank.BankService.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,16 +19,17 @@ public class RegisterController {
 
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/register")
-    public void register(@RequestBody RegisterDto registerDto) throws IllegalAccessException {
+    public ResponseEntity<?> register(@RequestBody RegisterDto registerDto) throws IllegalAccessException {
         userService.register(registerDto);
+        return ResponseEntity.ok().build();
     }
 
-    @ExceptionHandler(IllegalAccessException.class)
-    public Errors handle(IllegalAccessException e){
+    @ExceptionHandler
+    public ResponseEntity<ErrorDto> handle(Exception e){
         log.error(e.getMessage());
-        Errors error = new Errors();
+        ErrorDto error = new ErrorDto();
         error.setErrorMessage(e);
-        return error;
+        return ResponseEntity.ok().body(error);
     }
 
 }

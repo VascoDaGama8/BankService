@@ -1,13 +1,14 @@
-package Finteche.Bank.BankService.models;
+package Finteche.Bank.BankService.dto;
 
-public class Errors {
+public class ErrorDto {
     private String errorMessage;
 
     public String getErrorMessage() {
         return errorMessage;
     }
 
-    public void setErrorMessage(IllegalAccessException e) {
+    public void setErrorMessage(Exception e) {
         this.errorMessage = e.getMessage();
     }
+
 }
