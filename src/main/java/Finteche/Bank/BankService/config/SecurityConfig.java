@@ -16,6 +16,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -26,7 +32,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 @Slf4j
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -42,10 +48,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManagerBean());
         authenticationFilter.setFilterProcessesUrl("/bank/login");
         http.csrf().disable();
+        http.cors();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/bank/login", "/bank/register", "/bank/user/refresh").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/bank/user/**").hasAnyAuthority("ROLE_USER");
-        http.authorizeRequests().antMatchers(POST, "/bank/user/**").hasAnyAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers("/bank/login", "/bank/register", "/bank/user/refresh", "/bank/user/getInfo").permitAll();
+        http.authorizeRequests().antMatchers(GET, "/bank/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(POST, "/bank/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");
         http.authorizeRequests().antMatchers(GET, "/bank/admin/**").hasAnyAuthority("ROLE_ADMIN");
         http.authorizeRequests().antMatchers(POST, "/bank/admin/**").hasAnyAuthority("ROLE_ADMIN");
         http.authorizeRequests().anyRequest().authenticated();
@@ -53,10 +60,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(new AuthorizationFiltre(), UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception{
         return super.authenticationManagerBean();
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**").allowedOrigins("http://localhost:4200").allowedMethods("*");
+    }
 }

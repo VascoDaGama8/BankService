@@ -40,7 +40,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = findByUsername(username);
+        User user = null;
+        try {
+            user = findByUsername(username);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         user.getRoles().forEach(role -> {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
@@ -54,8 +59,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void register(RegisterDto registerDto) throws IllegalAccessException {
         User user = new User();
         if(
-                registerDto.getPatronymic() == null || registerDto.getPassword() == null || registerDto.getUsername() == null || registerDto.getLastName() == null || registerDto.getFirstName() == null ||
-                        registerDto.getEmail() == null
+                registerDto.getPatronymic() =="" || registerDto.getPassword() == "" || registerDto.getUsername() == "" || registerDto.getLastName() == "" || registerDto.getFirstName() == "" ||
+                        registerDto.getEmail() == ""
         ){
             throw new IllegalAccessException("Not enough data");
         }
@@ -104,22 +109,29 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void deleteUser(String accountNumber) throws IllegalAccessException {
-        User u = userRepository.findByAccountNumber(accountNumber);
+        User u = findByAccountNumber(accountNumber);
         if(u == null) throw new IllegalAccessException("Not found user with: " + accountNumber + "account number");
         u.setStatus(Status.DELETED);
+        userRepository.save(u);
         log.info("IN deletUser - status of user with account number: {} chanched on DELETED", accountNumber);
     }
 
     @Override
-    public User findByUsername(String username) {
+    public User findByUsername(String username) throws IllegalAccessException {
         User result = userRepository.findByUsername(username);
+        if(result == null){
+            throw new IllegalAccessException("User is not found");
+        }
         log.info("IN findByUsername - user: {} found by username: {}", result, username);
         return result;
     }
 
     @Override
-    public User findByAccountNumber(String accountNumber) {
+    public User findByAccountNumber(String accountNumber) throws IllegalAccessException {
         User result = userRepository.findByAccountNumber(accountNumber);
+        if(result == null){
+            throw new IllegalAccessException("User is not found");
+        }
         log.info("IN findByUsername - user: {} found by username: {}", result, accountNumber);
         return result;
     }
@@ -147,14 +159,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void makeTransfer(TransferDto transferBlanace) throws IllegalAccessException {
-        if(findByUsername(transferBlanace.getTo()).getStatus() == Status.DELETED){
+        if(findByAccountNumber(transferBlanace.getTo()).getStatus() == Status.DELETED){
             throw new IllegalAccessException("Status of user with account number " + transferBlanace.getTo() + " is DELETED");
         }
-        if(findByUsername(transferBlanace.getFrom()).getStatus() == Status.DELETED){
+        if(findByAccountNumber(transferBlanace.getFrom()).getStatus() == Status.DELETED){
             throw new IllegalAccessException("Status of user with account number " + transferBlanace.getFrom() + " is DELETED");
         }
-        Integer fromBalance = Integer.parseInt(userRepository.findByAccountNumber(transferBlanace.getFrom()).getBalance());
-        Integer toBalance = Integer.parseInt(userRepository.findByAccountNumber(transferBlanace.getTo()).getBalance());
+        Integer fromBalance = Integer.parseInt(findByAccountNumber(transferBlanace.getFrom()).getBalance());
+        Integer toBalance = Integer.parseInt(findByAccountNumber(transferBlanace.getTo()).getBalance());
         if(fromBalance == null || toBalance == null){
             throw new IllegalAccessException("No such user");
         }

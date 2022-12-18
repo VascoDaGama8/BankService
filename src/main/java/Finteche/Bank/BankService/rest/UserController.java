@@ -41,6 +41,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/add")
     public ResponseEntity<?> addMoney(@RequestBody TransferDto transferBlanace) throws IllegalAccessException {
@@ -54,9 +55,23 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/getInfo")
-    public ResponseEntity<?>getInfo(HttpServletRequest request){
-        return ResponseEntity.ok().body(userService.findByUsername(request.getParameter("username")));
+    @GetMapping("/getInfo")
+    public ResponseEntity<?>getInfo(HttpServletRequest request) throws IllegalAccessException {
+        String authorizationHeader = request.getHeader(AUTHORIZATION);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            try {
+                String token = authorizationHeader.substring("Bearer ".length());
+                Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+                JWTVerifier verifier = JWT.require(algorithm).build();
+                DecodedJWT decodedJWT = verifier.verify(token);
+                String username = decodedJWT.getSubject();
+                return ResponseEntity.ok().body(userService.findByUsername(username));
+            }catch (Exception e){
+                throw new IllegalAccessException(e.getMessage());
+            }
+        } else {
+            throw new RuntimeException("Refresh token is missing");
+        }
     }
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/refresh")

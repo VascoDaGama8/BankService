@@ -11,9 +11,9 @@ public interface UserService {
     List<User> getAll();
     void deleteUser(String accountNumber) throws IllegalAccessException;
 
-    User findByUsername(String username);
+    User findByUsername(String username) throws IllegalAccessException;
 
-    User findByAccountNumber(String accountNumber);
+    User findByAccountNumber(String accountNumber) throws IllegalAccessException;
 
     void addMoney(String to, String amount) throws IllegalAccessException;
 

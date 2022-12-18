@@ -1,5 +1,6 @@
 package Finteche.Bank.BankService.rest;
 
+import Finteche.Bank.BankService.dto.AcNumDto;
 import Finteche.Bank.BankService.dto.ErrorDto;
 import Finteche.Bank.BankService.dto.TransferDto;
 import Finteche.Bank.BankService.models.User;
@@ -24,8 +25,8 @@ public class AdminController extends UserController{
     }
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/deletUser")
-    public ResponseEntity<?> deletUser(@RequestBody String accountNumber) throws IllegalAccessException {
-        userService.deleteUser(accountNumber);
+    public ResponseEntity<?> deletUser(@RequestBody AcNumDto accountNumber) throws IllegalAccessException {
+        userService.deleteUser(accountNumber.getAccountNumber());
         return ResponseEntity.ok().build();
     }
     @ExceptionHandler
