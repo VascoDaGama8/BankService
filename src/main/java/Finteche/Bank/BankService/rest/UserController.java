@@ -1,8 +1,9 @@
 package Finteche.Bank.BankService.rest;
-
+import Finteche.Bank.BankService.config.Global;
 import Finteche.Bank.BankService.dto.ErrorDto;
 import Finteche.Bank.BankService.dto.TransferDto;
 import Finteche.Bank.BankService.models.Role;
+import Finteche.Bank.BankService.models.Transfer;
 import Finteche.Bank.BankService.models.User;
 import Finteche.Bank.BankService.service.UserService;
 import com.auth0.jwt.JWT;
@@ -32,8 +33,6 @@ import static java.util.Arrays.stream;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
-
 @RestController
 @RequestMapping(value = "/bank/user")
 @Slf4j
@@ -41,18 +40,22 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/add")
-    public ResponseEntity<?> addMoney(@RequestBody TransferDto transferBlanace) throws IllegalAccessException {
-        userService.addMoney(transferBlanace.getTo(), transferBlanace.getAmount());
+    @PostMapping("/transfer")
+    public ResponseEntity<?> transfer(@RequestBody TransferDto transferBlanace, HttpServletRequest request) throws IllegalAccessException {
+        String authorizationHeader = request.getHeader(AUTHORIZATION);
+        String token = authorizationHeader.substring("Bearer ".length());
+        Algorithm algorithm = Algorithm.HMAC256(Global.secret.getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(token);
+        String username = decodedJWT.getSubject();
+        userService.makeTransfer(transferBlanace, username);
         return ResponseEntity.ok().build();
     }
     @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/transfer")
-    public ResponseEntity<?> transfer(@RequestBody TransferDto transferBlanace) throws IllegalAccessException {
-        userService.makeTransfer(transferBlanace);
-        return ResponseEntity.ok().build();
+    @GetMapping("/getAcNum")
+    public ResponseEntity<?> UsrAcNum() throws IllegalAccessException {
+        return ResponseEntity.ok().body(userService.allAcNum());
     }
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/getInfo")
@@ -61,7 +64,7 @@ public class UserController {
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             try {
                 String token = authorizationHeader.substring("Bearer ".length());
-                Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+                Algorithm algorithm = Algorithm.HMAC256(Global.secret.getBytes());
                 JWTVerifier verifier = JWT.require(algorithm).build();
                 DecodedJWT decodedJWT = verifier.verify(token);
                 String username = decodedJWT.getSubject();
@@ -80,7 +83,7 @@ public class UserController {
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             try {
                 String refreshToken = authorizationHeader.substring("Bearer ".length());
-                Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+                Algorithm algorithm = Algorithm.HMAC256(Global.secret.getBytes());
                 JWTVerifier verifier = JWT.require(algorithm).build();
                 DecodedJWT decodedJWT = verifier.verify(refreshToken);
                 String username = decodedJWT.getSubject();

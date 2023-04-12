@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.validation.constraints.Pattern;
 import java.util.List;
 
 @Entity
@@ -29,9 +30,9 @@ public class User extends BaseEntity{
     @Column(name = "patronymic")
     private String patronymic;
     @Column(name = "account_number")
-    private String accountNumber;
+    private int accountNumber;
     @Column(name = "balance")
-    private String balance;
+    private int balance;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},

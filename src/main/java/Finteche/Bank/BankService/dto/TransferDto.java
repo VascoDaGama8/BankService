@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class TransferDto {
-    private String to;
-    private String from;
-    private String amount;
+    private int to;
+    private int amount;
+    private String comment;
 }

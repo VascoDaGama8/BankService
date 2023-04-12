@@ -3,6 +3,7 @@ package Finteche.Bank.BankService.rest;
 import Finteche.Bank.BankService.dto.AcNumDto;
 import Finteche.Bank.BankService.dto.ErrorDto;
 import Finteche.Bank.BankService.dto.TransferDto;
+import Finteche.Bank.BankService.models.Transfer;
 import Finteche.Bank.BankService.models.User;
 import Finteche.Bank.BankService.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,15 +20,9 @@ public class AdminController extends UserController{
     @Autowired
     private UserService userService;
     @CrossOrigin(origins = "http://localhost:4200")
-    @GetMapping("/getUsers")
-    public ResponseEntity<List<User>> getAll(){
-        return ResponseEntity.ok().body(userService.getAll());
-    }
-    @CrossOrigin(origins = "http://localhost:4200")
-    @PostMapping("/deletUser")
-    public ResponseEntity<?> deletUser(@RequestBody AcNumDto accountNumber) throws IllegalAccessException {
-        userService.deleteUser(accountNumber.getAccountNumber());
-        return ResponseEntity.ok().build();
+    @GetMapping("/getTransfers")
+    public ResponseEntity<List<Transfer>> getAllTransfers(){
+        return ResponseEntity.ok().body(userService.getAllTransfers());
     }
     @ExceptionHandler
     public ResponseEntity<ErrorDto> handle(Exception e){
